@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+     <android.support.design.widget.TextInputLayout
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_10"
+            android:layout_marginLeft="@dimen/padding_20"
+            android:layout_marginRight="@dimen/padding_20"
+            android:layout_marginBottom="@dimen/padding_10"
+        >
+         <EditText
+            android:id="@+id/input_daily_message"
+            android:inputType="text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/daily_example" />
+    </android.support.design.widget.TextInputLayout>
+</LinearLayout>

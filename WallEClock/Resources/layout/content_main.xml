@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:showIn="@layout/content_main"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto">
+
+    <include
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        layout="@layout/homepage" 
+        android:id="@+id/homepage"
+        />
+    <include
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        layout="@layout/night_mode_setting"
+        android:id="@+id/layout_night_mode_setting"
+        android:visibility="invisible"/>
+    <include
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        layout="@layout/message_setting" 
+        android:id="@+id/layout_message_setting"
+        android:visibility="invisible"
+      />
+    
+    <include
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        layout="@layout/devicespage" 
+        android:id="@+id/layout_device_list"
+        android:visibility="invisible" />
+</RelativeLayout>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+        android:layout_height="match_parent">
+
+    <android.support.design.widget.TextInputLayout
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_10"
+            android:layout_marginLeft="@dimen/padding_20"
+            android:layout_marginRight="@dimen/padding_20"
+            android:layout_marginBottom="@dimen/padding_10"
+        >
+         <EditText
+            android:id="@+id/input_birthday_name"
+            android:inputType="text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/name" />
+    </android.support.design.widget.TextInputLayout>
+    <RelativeLayout
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:layout_marginHorizontal="@dimen/padding_20"
+         android:layout_marginVertical="@dimen/padding_10">
+         <TextView
+            android:id="@+id/txtday"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/day"></TextView>
+        <Spinner
+            android:id="@+id/spinner_day"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/txtday" ></Spinner>
+        <TextView
+            android:id="@+id/txtmonth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/month"
+            android:layout_marginLeft="@dimen/padding_20"
+            android:layout_toRightOf="@+id/txtday"></TextView>
+        <Spinner
+            android:id="@+id/spinner_month"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/txtmonth"
+            android:layout_toRightOf="@+id/spinner_day"
+            android:layout_alignLeft="@+id/txtmonth"
+            ></Spinner>
+    </RelativeLayout>
+</LinearLayout>

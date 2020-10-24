@@ -1,0 +1,32 @@
+<resources>
+  <string name="app_name">WallEClock</string>
+  <string name="action_settings">Cài đặt</string>
+  <string name="night_setting">Chế độ ban đêm</string>
+  <string name="nightModeEnable">Bật tắt chế độ ban đêm</string>
+  <string name="nightModeStart">Thời gian bắt đầu</string>
+  <string name="nightModeEnd">Thời gian kết thúc</string>
+  <string name="action_cancel">Huỷ</string>
+  <string name="effect_setting">Hiệu ứng chuyển đổi</string>
+  <string name="off">Tắt</string>
+  <string name="simple_effect">Đơn giản</string>
+  <string name="random_effect">Ngẫu nhiên</string>
+  <string name="message_setting">Sự kiện</string>
+  <string name="solar_newyear">Năm mới</string>
+  <string name="lunar_newyear">Tết nguyên đán</string>
+  <string name="xmas">Giáng sinh</string>
+  <string name="birthday">Sinh nhật</string>
+  <string name="daily">Thông điệp hàng ngày</string>
+  <string name="daily_example">Ngày mới vui vẻ</string>
+  <string name="event_example">Sinh nhật, Năm mới...</string>
+  <string name="name">Tên</string>
+  <string name="day">Ngày</string>
+  <string name="month">Tháng</string>
+
+  <string name="device_list">Danh sách thiết bị</string>
+  <string name="scanning">Đang quét các thiết bị quanh đây</string>
+  <string name="cannot_connect">Không thể kết nối tới thiết bị. Vui lòng thử lại sau</string>
+  <string name="invalid_message">Dữ liệu nhận được không đúng định dạng</string>
+  <string name="password_incorrect">Mật khẩu không đúng</string>
+  <string name="something_wrong">Đã có lỗi xảy ra</string>
+</resources>
+ 
