@@ -1,0 +1,11 @@
+name: CI
+on: [push]
+jobs:
+  build:
+    name: Setup Xamarin and Mono versions
+    runs-on: macos-latest
+    steps:
+    - name: setup-xamarin
+      uses: maxim-lobanov/setup-xamarin@v1
+      with:
+        mono-version: 6.12
