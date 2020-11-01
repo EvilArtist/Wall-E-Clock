@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Android;
 using Android.App;
 using Android.Bluetooth;
 using Android.Bluetooth.LE;
@@ -16,7 +16,6 @@ using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
-using Java.IO;
 using Java.Lang;
 using Java.Util;
 using WallEClock.Common;
@@ -26,15 +25,18 @@ namespace WallEClock
 {
     public partial class MainActivity
     {
-        private BluetoothLeScanner scanner;
-        private ScanCallback BLEScanCallback;
-        private BluetoothGatt bluetoothGatt;
-        private readonly BLEGattCallback bleGattCallback = new BLEGattCallback();
         private BluetoothDeviceAdapter listviewAdapter;
- 
+
         private BluetoothAdapter bluetoothAdapter;
+        private BluetoothSocket bluetoothSocket;
+        private BroadcastReceiver receiver;
         public ObservableCollection<BluetoothDevice> Devices { get; set; }
-        private byte[] password = { 0, 0, 0, 0 };
+        private ApplicationState applicationState;
+
+        private static readonly UUID bluetoothUUID = UUID.FromString("00001101-0000-1000-8000-00805F9B34FB");
+
+        ClockHandler handler;
+        private readonly byte[] password = { 0, 0, 0, 0 };
         private void InitializeDeviceList()
         {
             if (deviceListPage is null)
@@ -49,173 +51,113 @@ namespace WallEClock
                 BluetoothManager bluetoothManager = (BluetoothManager)GetSystemService(Context.BluetoothService);
                 bluetoothAdapter = bluetoothManager.Adapter;
 
-                if (scanner is null)
+                receiver = new ClockBroadcastReceiver()
                 {
-                    CreateBLEObject();
+                    OnDeviceDiscoveried = OnDeviceDiscoveried
+                };
+                IntentFilter filter = new IntentFilter(BluetoothDevice.ActionFound);
+                RegisterReceiver(receiver, filter);
+
+                handler = new ClockHandler(MainLooper)
+                {
+                    OnMessageReceived = HandleMessage,
+                    OnDeviceConnected = DeviceConnected
+                };
+
+                Devices.Clear();
+                foreach (var device in bluetoothAdapter.BondedDevices.Where(x => x.Name.Contains(BluetoothConst.BluetoothName)))
+                {
+                    Devices.Add(device);
+                    listviewAdapter.NotifyDataSetChanged();
                 }
             }
-        }
-
-        private void BleDeviceList_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
-        {
-            var device = Devices[e.Position];
-            ConnectDevice(device.Address, true);
         }
 
         private async void InitializeDevice()
         {
-            InitializeDeviceList(); 
-            Java.IO.File file = new Java.IO.File(FilesDir, dataFile);
-            if (!file.Exists())
+            InitializeDeviceList();
+            if (File.Exists(DataFile))
             {
-                homePage.LayoutFadeout(150, 0);
-                deviceListPage.LayoutComeFromRight(300, 150);
-                requestScan = true;
-                RequestPermissions(new string[]{
-                     Android.Manifest.Permission.AccessCoarseLocation,
-                     Android.Manifest.Permission.Bluetooth,
-                     Android.Manifest.Permission.BluetoothAdmin,
-                 }, 1);
-            }
-            else
-            {
-                string address = string.Empty;
-                using Stream fos = OpenFileInput(dataFile);
-                using StreamReader reader = new StreamReader(fos);
-                address = await reader.ReadLineAsync();
-                if (!reader.EndOfStream)
+                using var reader = new StreamReader(DataFile, true);
+                var jsonstring = await reader.ReadToEndAsync();
+                applicationState = JsonSerializer.Deserialize<ApplicationState>(jsonstring);
+                if (!string.IsNullOrEmpty(applicationState.DeviceAddress))
                 {
-                    string passwordLine = await reader.ReadLineAsync();
-                    password = passwordLine.Split('-').Select(x=> Convert.ToByte(x, 16)).ToArray();
-                }
-                if (!string.IsNullOrEmpty(address))
-                {
-                    ConnectDevice(address, false);
-                }
-            }
-        }
-
-        private void CreateBLEObject()
-        {
-            scanner = bluetoothAdapter.BluetoothLeScanner;
-            bluetoothAdapter.Enable();
-            Devices.Clear();
-            BLEScanCallback = new BLEScanCallback((device) =>
-            {
-                if (Devices.Any(x => x.Address == device.Address))
-                {
+                    await ConnectDevice(applicationState.DeviceAddress, false);
                     return;
                 }
-                Devices.Add(device);
+            }
 
-                listviewAdapter.NotifyDataSetChanged();
-            });
-            foreach (var device in bluetoothAdapter.BondedDevices.Where(x => x.Name.Contains(BluetoothConst.BluetoothName)))
+            homePage.LayoutFadeout(150, 0);
+            deviceListPage.LayoutComeFromRight(300, 150);
+            requestScan = true;
+            if (CheckSelfPermission(Manifest.Permission.AccessCoarseLocation) != Permission.Granted)
             {
-                Devices.Add(device);
-                listviewAdapter.NotifyDataSetChanged();
+                RequestPermissions(new string[]{
+                    Android.Manifest.Permission.AccessCoarseLocation,
+                    Android.Manifest.Permission.Bluetooth,
+                    Android.Manifest.Permission.BluetoothAdmin,
+                }, 1);
             }
         }
 
-        private void ScanBLEDevice()
+        private void ScanDevice()
         {
-            ScanFilter filter = new ScanFilter.Builder()
-                .SetDeviceName(BluetoothConst.BluetoothName)
-                .Build();
-
-            List<ScanFilter> filters = new List<ScanFilter>()
+            if (!bluetoothAdapter.IsEnabled)
             {
-                filter
-            };
-
-            ScanSettings settings = new ScanSettings.Builder()
-                                        .SetScanMode(Android.Bluetooth.LE.ScanMode.LowLatency)
-                                        .Build();
-            scanner.StartScan(filters, settings, BLEScanCallback);
-            //scanner.StartScan(filters, null, BLEScanCallback);
+                bluetoothAdapter.Enable();
+            }
+            bluetoothAdapter.StartDiscovery();
         }
 
-        private void StopScanning()
+
+        private async void BleDeviceList_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
         {
-            scanner.StopScan(BLEScanCallback);
+            var device = Devices[e.Position];
+            await ConnectDevice(device.Address, false); //TODO update here
         }
 
-        private void ConnectDevice(string address, bool saveAddress)
+        private async Task ConnectDevice(string address, bool saveAddress)
         {
-            using CancellationTokenSource source = new CancellationTokenSource();
+            if (bluetoothSocket?.IsConnected ?? false)
+            {
+                return;
+            }
+            bluetoothAdapter.CancelDiscovery();
             var device = bluetoothAdapter.GetRemoteDevice(address);
-            CancellationToken token = source.Token;
-            bleGattCallback.DataReceived = BLEDataReceived;
-            bleGattCallback.OnDeviceConnected = async (s) =>
+            try
             {
+                bluetoothSocket = device.CreateRfcommSocketToServiceRecord(bluetoothUUID);
+                await bluetoothSocket.ConnectAsync();
                 if (saveAddress)
                 {
-                    try
-                    {
-                        using Stream fos = OpenFileOutput(dataFile, FileCreationMode.Private);
-                        using StreamWriter sw = new StreamWriter(fos);
-                        await sw.WriteLineAsync(address);
-                        await sw.WriteLineAsync(string.Join("-", password.Select(x=>$"{x:X2}")));
-                    }
-                    catch
-                    {
-
-                    }
+                    await SaveConfigAsync();
                 }
-                //bluetoothGatt = device.ConnectGatt(this, false, bleGattCallback);
-                //bluetoothGatt.Connect();
-                await Task.Delay(200);
-                bluetoothGatt.DiscoverServices();
-                await Task.Delay(200);
-                BluetoothGattService service = bluetoothGatt.GetService(BluetoothConst.UartServiceId);
-                for (int i = 0; i < 7; i++)
+
+                handler.ObtainMessage(ClockHandler.CONNECTING_STATUS, 1, -1, address)
+                        .SendToTarget();
+            }
+            catch
+            {
+                try
                 {
-                    if (service == null)
-                    {
-                        bluetoothGatt.DiscoverServices();
-                        await Task.Delay(200);
-                        service = bluetoothGatt.GetService(BluetoothConst.UartServiceId);
-                    }
-                    else
-                    {
-                        break;
-                    }
+                    bluetoothSocket?.Close();
                 }
-
-                if (service == null)
-                {
-                    RunOnUiThread(() =>
-                    {
-                        Toast toast = Toast.MakeText(this, Resource.String.cannot_connect, ToastLength.Long);
-                        toast.Show();
-                    });
-                    return;
-                }
-                EnableTXNotification();
-                await Task.Delay(200);
-                UartWrite(FrameEncoder.Encode(FrameEncoder.GetInfoCommand, password));
-            };
-            bluetoothGatt = device.ConnectGatt(this, true, bleGattCallback);
+                catch { }
+            }
         }
 
-        private void EnableTXNotification()
+        private async Task SaveConfigAsync()
         {
-            BluetoothGattService service = bluetoothGatt.GetService(BluetoothConst.UartServiceId);
-            BluetoothGattCharacteristic TxChar = service.GetCharacteristic(BluetoothConst.TxCharId);
-            bluetoothGatt.SetCharacteristicNotification(TxChar, true);
-
-            BluetoothGattDescriptor descriptor = TxChar.GetDescriptor(BluetoothConst.CCCD);
-            descriptor.SetValue(BluetoothGattDescriptor.EnableNotificationValue.ToArray());
-            bluetoothGatt.WriteDescriptor(descriptor);
-        }
-        private void UartWrite(byte[] data)
-        {
-            BluetoothGattService service = bluetoothGatt.GetService(BluetoothConst.UartServiceId);
-            BluetoothGattCharacteristic RxChar = service.GetCharacteristic(BluetoothConst.RxCharId);
-            RxChar.SetValue(data);
-            bluetoothGatt.WriteCharacteristic(RxChar);
+            try
+            {
+                var jsonString = JsonSerializer.Serialize(applicationState);
+                await File.WriteAllTextAsync(DataFile, jsonString);
+            }
+            catch { }
         }
 
+        #region BluetoothEvent 
         private void BLEDataReceived(byte[] receiveData)
         {
             if (receiveData.Length < 4 || receiveData[0] != FrameEncoder.StartFrame || receiveData[^1] != FrameEncoder.EndFrame)
@@ -241,9 +183,56 @@ namespace WallEClock
 
             if (receiveData[1] == 'G' || receiveData[1] == 'g')
             {
-                Log.Debug("Data", string.Join("-", receiveData.Select(x => $"{x:X2}")));
+                clockConfiguration.ParseFromData(receiveData);
             }
 
         }
+
+        public void HandleMessage(byte[] data)
+        {
+            BLEDataReceived(data);
+        }
+
+        public async void DeviceConnected(bool success, Java.Lang.Object device)
+        {
+            await Task.Delay(100);
+            await bluetoothSocket.OutputStream.WriteAsync(FrameEncoder.Encode(FrameEncoder.GetInfoCommand, password));
+            await Task.Delay(5000);
+            byte[] buffer = new byte[1024];
+
+            try
+            {
+                if (bluetoothSocket.InputStream.IsDataAvailable())
+                {
+                    int bytes = await bluetoothSocket.InputStream.ReadAsync(buffer);
+                    handler.ObtainMessage(2, bytes, -1, buffer)
+                            .SendToTarget();
+                    deviceListPage.LayoutGoToRight(150, 0);
+                    homePage.LayoutFadein(300, 150);
+                }
+            }
+            catch
+            {
+                // break;
+            }
+            ////thread.Start();
+        }
+
+        private void OnDeviceDiscoveried(object sender, BluetoothDevice device)
+        {
+            if (Devices.Any(x => x.Address == device.Address))
+            {
+                return;
+            }
+            Devices.Add(device);
+            listviewAdapter.NotifyDataSetChanged();
+        }
+        #endregion
+    }
+
+    public class ApplicationState
+    {
+        public string DeviceAddress { get; set; }
+        public string Password { get; set; }
     }
 }

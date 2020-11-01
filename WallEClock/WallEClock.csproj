@@ -60,16 +60,19 @@
     <Reference Include="System.Core" />
     <Reference Include="Mono.Android" />
     <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\RedefinedColor.cs" />
     <Compile Include="Common\ViewExtensions.cs" />
+    <Compile Include="Domain\BluetoothConnection.cs" />
     <Compile Include="Domain\BluetoothConst.cs" />
     <Compile Include="Domain\BLEGattCallback.cs" />
     <Compile Include="Domain\BLEScanCallback.cs" />
     <Compile Include="Domain\BluetoothDeviceAdapter.cs" />
+    <Compile Include="Domain\ClockBroadcastReceiver.cs" />
     <Compile Include="Domain\ClockConfiguration.cs" />
+    <Compile Include="Domain\ConnectThread.cs" />
+    <Compile Include="Domain\FontEncode.cs" />
     <Compile Include="Domain\FrameEncoder.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="MainActivityBLEHandle.cs" />
@@ -117,6 +120,9 @@
     <AndroidResource Include="Resources\mipmap-xxxhdpi\ic_launcher_round.png" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="System.Text.Json">
+      <Version>4.7.2</Version>
+    </PackageReference>
     <PackageReference Include="Xamarin.Android.Support.Design" Version="28.0.0.3" />
     <PackageReference Include="Xamarin.Android.Support.Core.Utils" Version="28.0.0.3" />
     <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="28.0.0.3" />

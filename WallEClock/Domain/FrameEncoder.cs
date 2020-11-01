@@ -15,8 +15,8 @@ namespace WallEClock.Domain
 {
     public class FrameEncoder
     {
-        public static readonly byte StartFrame = (byte)'@';
-        public static readonly byte EndFrame = (byte)'&';
+        public static readonly byte StartFrame = (byte)0xFE;
+        public static readonly byte EndFrame = (byte)0xFD;
         public static readonly byte GetInfoCommand = (byte)'G';
         public static readonly byte SetTimeCommand = (byte)'T';
         public static readonly byte SetColorCommand = (byte)'C';

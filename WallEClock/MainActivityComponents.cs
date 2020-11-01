@@ -41,11 +41,11 @@ namespace WallEClock
         private SwitchCompat switchLunarNewyear;
         private SwitchCompat switchXmas;
         private SwitchCompat switchDaily;
-        private SwitchCompat switchBirthday;
+        private readonly SwitchCompat switchBirthday;
 
         private TextView textMessageInfo;
         private TextView textDailyMessage;
-        private string dataFile = "clockinfo.esp";
+        private string DataFile => System.IO.Path.Combine(Xamarin.Essentials.FileSystem.AppDataDirectory, "applicationstate.json");
 
 
         private ListView bleDeviceList;
@@ -53,6 +53,7 @@ namespace WallEClock
 
         private void GetComponents()
         {
+            applicationState = new ApplicationState();
             InitializeTextClockCard();
 
             homePage = FindViewById(Resource.Id.homepage);

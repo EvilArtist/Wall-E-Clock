@@ -25,7 +25,15 @@ namespace WallEClock
 
             //FloatingActionButton fab = FindViewById<FloatingActionButton>(Resource.Id.fab);
             //fab.Click += FabOnClick;
+
+            AppDomain currentDomain = AppDomain.CurrentDomain;
+            currentDomain.UnhandledException += HandleExceptions;
             GetComponents();
+        }
+
+        private void HandleExceptions(object sender, UnhandledExceptionEventArgs e)
+        {
+
         }
 
         public override bool OnCreateOptionsMenu(IMenu menu)
@@ -57,39 +65,25 @@ namespace WallEClock
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
             if (requestScan)
             {
-                ScanBLEDevice();
+                ScanDevice();
             }
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
-
         protected override void OnDestroy()
         {
-            bluetoothGatt?.Disconnect();
-            bluetoothGatt?.Close();
+            bluetoothSocket?.Close();
             base.OnDestroy();
         }
 
         protected override void OnStop()
         {
-            bluetoothGatt?.Disconnect();
+            bluetoothSocket?.Close();
             base.OnStop();
         }
 
         protected override void OnStart()
         {
             base.OnStart();
-        }
-
-        protected override void OnPause()
-        {
-            bluetoothGatt?.Disconnect();
-            base.OnPause();
-        }
-
-        protected override void OnResume()
-        {
-            bluetoothGatt?.Connect();
-            base.OnResume();
         }
     }
 }
