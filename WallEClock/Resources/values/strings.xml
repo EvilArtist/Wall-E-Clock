@@ -11,10 +11,11 @@
   <string name="simple_effect">Đơn giản</string>
   <string name="random_effect">Ngẫu nhiên</string>
   <string name="message_setting">Sự kiện</string>
+  <string name="birthday">Sinh nhật</string>
+  <string name="birthdayCount">ngày sinh</string>
   <string name="solar_newyear">Năm mới</string>
   <string name="lunar_newyear">Tết nguyên đán</string>
   <string name="xmas">Giáng sinh</string>
-  <string name="birthday">Sinh nhật</string>
   <string name="daily">Thông điệp hàng ngày</string>
   <string name="daily_example">Ngày mới vui vẻ</string>
   <string name="event_example">Sinh nhật, Năm mới...</string>

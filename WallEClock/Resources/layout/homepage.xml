@@ -225,4 +225,55 @@
                 />
         </RelativeLayout>
     </android.support.design.card.MaterialCardView>
+
+     <android.support.design.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/padding_20"
+        android:layout_marginTop="@dimen/padding_5"
+        android:padding="@dimen/padding_20"
+        card_view:cardCornerRadius="@dimen/card_corner_radius"
+        card_view:cardElevation="@dimen/card_elevation"
+        android:background="@drawable/abc_btn_colored_material"
+        card_view:cardPreventCornerOverlap="false"
+        android:id="@+id/materialCardViewBirthday">
+         <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="@dimen/padding_5"
+            android:background="@drawable/gradient_background_secondary"
+           >
+            <Button
+                android:layout_width="@dimen/image_size"
+                android:layout_height="@dimen/image_size"
+                android:background="@drawable/rounded_image"
+                android:drawableStart="@drawable/baseline_cake_24"
+                android:id="@+id/birthdayIcon"
+                >
+            </Button>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/birthday"
+                android:layout_toRightOf="@+id/birthdayIcon"
+                android:layout_marginLeft="@dimen/padding_10"
+                android:textSize="@dimen/abc_text_size_large_material"
+                android:id="@+id/birthdayLabel"
+                android:textFontWeight="700"
+                />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/birthdayIcon"
+                android:layout_below="@+id/birthdayLabel"
+                android:layout_marginLeft="@dimen/padding_10"
+                android:layout_marginTop="@dimen/padding_5"
+                android:textSize="@dimen/abc_text_size_body_1_material"
+                android:textFontWeight="700"
+                android:text="@string/birthdayCount"
+                android:id="@+id/birthdayInfo"
+                />
+        </RelativeLayout>
+    </android.support.design.card.MaterialCardView>
 </LinearLayout>
