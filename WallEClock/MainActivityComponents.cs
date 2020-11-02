@@ -41,9 +41,7 @@ namespace WallEClock
         private SwitchCompat switchLunarNewyear;
         private SwitchCompat switchXmas;
         private SwitchCompat switchDaily;
-        private readonly SwitchCompat switchBirthday;
 
-        private TextView textMessageInfo;
         private TextView textDailyMessage;
         private string DataFile => System.IO.Path.Combine(Xamarin.Essentials.FileSystem.AppDataDirectory, "applicationstate.json");
 
@@ -70,7 +68,7 @@ namespace WallEClock
             InitializeMessageSetting();
             InitializeDevice();
 
-            textMessageInfo = FindViewById<TextView>(Resource.Id.messageInfo);
+            //textMessageInfo = FindViewById<TextView>(Resource.Id.messageInfo);
 
             clockConfiguration = new ClockConfiguration()
             {
@@ -93,14 +91,14 @@ namespace WallEClock
             buttonCancelMessage.Click += ButtonCancelMessage_Click;
 
             switchSolarNewyear = FindViewById<SwitchCompat>(Resource.Id.switch_solar_newyear);
-            switchSolarNewyear.Click += (s, e) => clockConfiguration.Hollidays |= Holliday.SolarNewYear;
+            switchSolarNewyear.Click += SwitchSolarNewyear_Click; ;
             switchLunarNewyear = FindViewById<SwitchCompat>(Resource.Id.switch_lunar_newyear);
-            switchLunarNewyear.Click += (s, e) => clockConfiguration.Hollidays |= Holliday.LunarNewYear;
+            switchLunarNewyear.Click += SwitchLunarNewyear_Click; ;
             switchXmas = FindViewById<SwitchCompat>(Resource.Id.switch_xmas);
-            switchXmas.Click += (s, e) => clockConfiguration.Hollidays |= Holliday.Chrismas;
+            switchXmas.Click += SwitchXmas_Click; ;
 
             switchDaily = FindViewById<SwitchCompat>(Resource.Id.switch_daily);
-            switchDaily.Click += (s,e) => clockConfiguration.Hollidays |= Holliday.DailyMessage;
+            switchDaily.Click += SwitchDaily_Click; ;
 
             textDailyMessage = FindViewById<TextView>(Resource.Id.daily_message);
             textDailyMessage.Click += TextDailyMessage_Click;
@@ -137,9 +135,16 @@ namespace WallEClock
         {
             chipSimpleEffect = FindViewById<Chip>(Resource.Id.chipSimpleEffect);
             chipRandomEffect = FindViewById<Chip>(Resource.Id.chipFullEffect);
-            chipSimpleEffect.Click += (s, e) => clockConfiguration.EffectEnable = false;
-            chipRandomEffect.Click += (s, e) => clockConfiguration.EffectEnable = true;
-
+            chipSimpleEffect.Click += (s, e) =>
+            {
+                clockConfiguration.EffectEnable = false;
+                SetClockEffect();
+            };
+            chipRandomEffect.Click += (s, e) =>
+            {
+                clockConfiguration.EffectEnable = true;
+                SetClockEffect();
+            };
             int[][] states = new int[][] {
                
                 new int[] {-Android.Resource.Attribute.StateActivated}, // unchecked
@@ -173,6 +178,10 @@ namespace WallEClock
             //TODO send data here
             switch (e.PropertyName)
             {
+                case nameof(ClockConfiguration.ClockColor):
+                    var color = clockConfiguration.ClockColor;
+                    SetClockColorView(color);
+                    break;
                 case nameof(ClockConfiguration.NightModeEnable):
                     SetNighmode(config);
                     break;
@@ -190,6 +199,18 @@ namespace WallEClock
                     break;
             }
         }
+        #region UIUpdate
+        private void SetClockColorView(Color color)
+        {
+            textClock.SetTextColor(color);
+            int index = RedefinedColor.GetColorIndex(color);
+            var scrollView = FindViewById<HorizontalScrollView>(Resource.Id.scrollview1);
+            if (index > 1)
+            {
+                var scroll = UinitConverter.Unit2Px(this, (index - 1) * (RedefinedColor.PickerWidth + RedefinedColor.PickeMargin));
+                scrollView.ScrollTo(scroll, 0);
+            }
+        }
 
         private void SetNighmode(ClockConfiguration config)
         {
@@ -205,5 +226,6 @@ namespace WallEClock
                 view.Text = Resources.GetString(Resource.String.off);
             }
         }
+        #endregion
     }
 }

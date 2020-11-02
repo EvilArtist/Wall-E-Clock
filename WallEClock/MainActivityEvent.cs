@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
+using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.Graphics;
@@ -13,27 +13,21 @@ using Android.Support.V7.Widget;
 using Android.Views;
 using Android.Widget;
 using WallEClock.Common;
+using WallEClock.Domain;
 
 namespace WallEClock
 {
     public partial class MainActivity
     {
-        private void Picker_Click(object sender, EventArgs e)
+        #region ColorPicker
+        private async void Picker_Click(object sender, EventArgs e)
         {
             View view = sender as View;
             Color color = (view.Background as ColorDrawable).Color;
             clockConfiguration.ClockColor = color;
-            textClock.SetTextColor(color);
-            int index = RedefinedColor.GetColorIndex(color);
-            var scrollView = FindViewById<HorizontalScrollView>(Resource.Id.scrollview1);
-            
-            if(index > 1)
-            {
-                var scroll = UinitConverter.Unit2Px(this, (index -1)* (RedefinedColor.PickerWidth + RedefinedColor.PickeMargin));
-                scrollView.ScrollTo(scroll, 0);
-            }
-
+            await SocketWriteAsync(FrameEncoder.SetColorCommand, color.R, color.G, color.B);
         }
+        #endregion
 
         #region NightMode
         private void ButtonSaveNightMode_Click(object sender, EventArgs e)
@@ -46,10 +40,11 @@ namespace WallEClock
             clockConfiguration.NightModeEnable = switchNightMode.Checked;
         }
 
-        private void ButtonCancelNightMode_Click(object sender, EventArgs e)
+        private async void ButtonCancelNightMode_Click(object sender, EventArgs e)
         {
             nightModeSettingPage.LayoutGoToRight(150, 0);
             homePage.LayoutFadein(300, 150);
+            await SocketWriteAsync(FrameEncoder.SetNightModeCommand, clockConfiguration.GetNightModeData());
         }
 
         private void CardViewNightMode_Click(object sender, EventArgs e)
@@ -90,6 +85,13 @@ namespace WallEClock
         }
         #endregion
 
+        #region Effect
+        private async void SetClockEffect()
+        {
+            await SocketWriteAsync(FrameEncoder.SetEffectCommand, clockConfiguration.EffectEnable ? (byte)0x01 : (byte)0x00);
+        }
+        #endregion
+
         #region Message Setting
         private void CardViewMessage_Click(object sender, EventArgs e)
         {
@@ -103,6 +105,82 @@ namespace WallEClock
             homePage.LayoutFadein(300, 150);
         }
 
+        private async void SwitchSolarNewyear_Click(object sender, EventArgs e)
+        {
+            if (switchSolarNewyear.Checked)
+            {
+                clockConfiguration.Hollidays |= Holliday.SolarNewYear;
+            }
+            else
+            {
+                clockConfiguration.Hollidays &= ~Holliday.SolarNewYear;
+            }
+            if (bluetoothSocket.IsConnected)
+            {
+                await SocketWriteAsync(FrameEncoder.SetNewYearCommand, (byte)(switchSolarNewyear.Checked ? 0x01 : 0x00));
+                await ReadMessage();
+            }
+        }
+
+        private async void SwitchLunarNewyear_Click(object sender, EventArgs e)
+        {
+            if (switchLunarNewyear.Checked)
+            {
+                clockConfiguration.Hollidays |= Holliday.LunarNewYear;
+            }
+            else
+            {
+                clockConfiguration.Hollidays &= ~Holliday.LunarNewYear;
+            }
+            if (bluetoothSocket.IsConnected)
+            {
+                await SocketWriteAsync(FrameEncoder.SetTetCommand, (byte)(switchLunarNewyear.Checked ? 0x01 : 0x00));
+                await ReadMessage();
+            }
+        }
+
+        private async void SwitchXmas_Click(object sender, EventArgs e)
+        {
+            if (switchXmas.Checked)
+            {
+                clockConfiguration.Hollidays |= Holliday.Chrismas;
+            }
+            else
+            {
+                clockConfiguration.Hollidays &= ~Holliday.Chrismas;
+            }
+            if (bluetoothSocket.IsConnected)
+            {
+                await SocketWriteAsync(FrameEncoder.SetXmasCommand, (byte)(switchXmas.Checked ? 0x01 : 0x00));
+                await ReadMessage();
+            }
+        }
+
+        private async void SwitchDaily_Click(object sender, EventArgs e)
+        {
+            if (switchDaily.Checked)
+            {
+                clockConfiguration.Hollidays |= Holliday.DailyMessage;
+            }
+            else
+            {
+                clockConfiguration.Hollidays &= ~Holliday.DailyMessage;
+            }
+            await SendDailySetting();
+        }
+
+        private async Task SendDailySetting()
+        {
+            if (bluetoothSocket.IsConnected)
+            {
+                FontEncode fontEncode = new FontEncode();
+                byte enable = (clockConfiguration.Hollidays & Holliday.DailyMessage) == Holliday.DailyMessage ? (byte)0x01 : (byte)0x00;
+                List<byte> message = clockConfiguration.DailyMessage.Select(x => (byte)fontEncode.GetIndex(x)).ToList();
+                message.Insert(0, enable);
+                await SocketWriteAsync(FrameEncoder.SetTetCommand, message.ToArray());
+                await ReadMessage();
+            }
+        }
 
         private void TextDailyMessage_Click(object sender, EventArgs e)
         {
@@ -111,13 +189,26 @@ namespace WallEClock
             alert.SetTitle("Thông điệp hàng ngày");
             alert.SetView(LayoutInflater.Inflate(Resource.Layout.mesage_input_layout, null));
             EditText input = null;
-            void onOKClick(object s, DialogClickEventArgs ev)
+            async void onOKClick(object s, DialogClickEventArgs ev)
             {
                 clockConfiguration.DailyMessage = input.Text;
+                await SendDailySetting();
             }
             alert.SetPositiveButton("Ok", onOKClick);
             var digalog = alert.Show();
             input = digalog.FindViewById<EditText>(Resource.Id.input_daily_message);
+        }
+
+        #endregion
+
+        #region ScanPage
+        private async void BleDeviceList_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
+        {
+            deviceListPage.LayoutGoToRight(150, 0);
+            homePage.LayoutFadein(300, 150);
+            var device = Devices[e.Position];
+            applicationState.DeviceAddress = device.Address;
+            await ConnectDevice(device.Address, true);
         }
         #endregion
     }

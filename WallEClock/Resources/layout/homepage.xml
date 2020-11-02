@@ -29,13 +29,13 @@
                 android:textSize="@dimen/abc_text_size_display_1_material"
                 android:textColor="@color/colorAccent"
                 android:format24Hour="HH:mm:ss"
-                android:text="12:00:00"
+                android:text=""
                 android:id="@+id/clockView"
                 />
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="22/12/2020"
+                
                 android:textSize="@dimen/abc_text_size_headline_material"
                 android:textAlignment="center"
                 android:textColor="@android:color/white"

@@ -34,7 +34,16 @@ namespace WallEClock.Domain
         public int NightModeStartMinute { get; set; }
         public int NightModeEndHour { get; set; }
         public int NightModeEndMinute { get; set; }
-        public Color ClockColor { get; set; }
+        private Color clockColor;
+
+        public Color ClockColor {
+            get { return clockColor; }
+            set {
+                clockColor = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ClockColor)));
+            }
+        }
+
         private bool effectEnable;
 
         public bool EffectEnable {
@@ -89,6 +98,7 @@ namespace WallEClock.Domain
         }
 
         private readonly FontEncode fontEncode = new FontEncode();
+
         public void ParseFromData(byte[] data)
         {
             try
@@ -127,6 +137,18 @@ namespace WallEClock.Domain
                 }
             }
             catch {}
+        }
+
+        public byte[] GetNightModeData()
+        {
+            return new byte[]
+            {
+                (byte)(NightModeEnable ? 0x01: 0x00),
+                (byte)NightModeStartHour,
+                (byte)NightModeStartMinute,
+                (byte)NightModeEndHour,
+                (byte)NightModeEndMinute
+            };
         }
     }
 

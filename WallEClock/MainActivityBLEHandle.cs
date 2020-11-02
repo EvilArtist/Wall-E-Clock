@@ -36,7 +36,6 @@ namespace WallEClock
         private static readonly UUID bluetoothUUID = UUID.FromString("00001101-0000-1000-8000-00805F9B34FB");
 
         ClockHandler handler;
-        private readonly byte[] password = { 0, 0, 0, 0 };
         private void InitializeDeviceList()
         {
             if (deviceListPage is null)
@@ -60,8 +59,8 @@ namespace WallEClock
 
                 handler = new ClockHandler(MainLooper)
                 {
-                    OnMessageReceived = HandleMessage,
-                    OnDeviceConnected = DeviceConnected
+                    OnMessageReceived = OnDataReceived,
+                    OnDeviceConnected = OnDeviceConnected
                 };
 
                 Devices.Clear();
@@ -76,18 +75,20 @@ namespace WallEClock
         private async void InitializeDevice()
         {
             InitializeDeviceList();
-            if (File.Exists(DataFile))
-            {
-                using var reader = new StreamReader(DataFile, true);
-                var jsonstring = await reader.ReadToEndAsync();
-                applicationState = JsonSerializer.Deserialize<ApplicationState>(jsonstring);
-                if (!string.IsNullOrEmpty(applicationState.DeviceAddress))
-                {
-                    await ConnectDevice(applicationState.DeviceAddress, false);
-                    return;
-                }
-            }
+            await ReadConfigAsync();
 
+            if (!string.IsNullOrEmpty(applicationState.DeviceAddress))
+            {
+                await ConnectDevice(applicationState.DeviceAddress, false);
+            }
+            else
+            {
+                RequestToScanDevice();
+            }
+        }
+
+        private void RequestToScanDevice()
+        {
             homePage.LayoutFadeout(150, 0);
             deviceListPage.LayoutComeFromRight(300, 150);
             requestScan = true;
@@ -99,6 +100,10 @@ namespace WallEClock
                     Android.Manifest.Permission.BluetoothAdmin,
                 }, 1);
             }
+            else
+            {
+                ScanDevice();
+            }
         }
 
         private void ScanDevice()
@@ -108,13 +113,6 @@ namespace WallEClock
                 bluetoothAdapter.Enable();
             }
             bluetoothAdapter.StartDiscovery();
-        }
-
-
-        private async void BleDeviceList_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
-        {
-            var device = Devices[e.Position];
-            await ConnectDevice(device.Address, false); //TODO update here
         }
 
         private async Task ConnectDevice(string address, bool saveAddress)
@@ -128,14 +126,27 @@ namespace WallEClock
             try
             {
                 bluetoothSocket = device.CreateRfcommSocketToServiceRecord(bluetoothUUID);
-                await bluetoothSocket.ConnectAsync();
+                Task timeout = Task.Delay(5000);
+                Task connectTask =bluetoothSocket.ConnectAsync();
+                await Task.WhenAny(timeout, connectTask);
+                
                 if (saveAddress)
                 {
                     await SaveConfigAsync();
                 }
+                if (bluetoothSocket.IsConnected)
+                {
+                    View connectView = FindViewById(Resource.Id.connecting_view);
+                    connectView.Visibility = ViewStates.Gone;
 
-                handler.ObtainMessage(ClockHandler.CONNECTING_STATUS, 1, -1, address)
-                        .SendToTarget();
+                    handler.ObtainMessage(ClockHandler.CONNECTING_STATUS, 1, -1, address)
+                            .SendToTarget();
+                }
+                else
+                {
+                    handler.ObtainMessage(ClockHandler.CONNECTING_STATUS, 1, -1, address)
+                           .SendToTarget();
+                }
             }
             catch
             {
@@ -147,6 +158,65 @@ namespace WallEClock
             }
         }
 
+        #region BluetoothIO
+
+        private async Task SocketWriteAsync(byte command)
+        {
+            await SocketWriteAsync(command, new byte[] { });
+        }
+
+        private async Task SocketWriteAsync(byte command, params byte[] data)
+        {
+            if (bluetoothSocket == null)
+            {
+                RunOnUiThread(() =>
+                {
+                    Toast toast = Toast.MakeText(this, Resource.String.bluetooth_not_available, ToastLength.Short);
+                    toast.Show();
+                });
+                return;
+            }
+            if (!bluetoothSocket.IsConnected)
+            {
+                if (string.IsNullOrEmpty(applicationState.DeviceAddress))
+                {
+                    await ConnectDevice(applicationState.DeviceAddress, false);
+                }
+                else
+                {
+                    RunOnUiThread(() =>
+                    {
+                        Toast toast = Toast.MakeText(this, Resource.String.bluetooth_not_available, ToastLength.Short);
+                        toast.Show();
+                    });
+                    return;
+                }
+            }
+            try
+            {
+                if (data.Length > 0)
+                {
+                    await bluetoothSocket.OutputStream.WriteAsync(FrameEncoder.Encode(command, applicationState.Password, data));
+                }
+                else
+                {
+                    await bluetoothSocket.OutputStream.WriteAsync(FrameEncoder.Encode(command, applicationState.Password));
+                }
+            }
+            catch
+            {
+                RunOnUiThread(() =>
+                {
+                    Toast toast = Toast.MakeText(this, Resource.String.bluetooth_disconnected, ToastLength.Short);
+                    toast.Show();
+                });
+            }
+        }
+
+        #endregion
+
+
+        #region Config
         private async Task SaveConfigAsync()
         {
             try
@@ -157,8 +227,26 @@ namespace WallEClock
             catch { }
         }
 
+        private async Task ReadConfigAsync()
+        {
+            if (File.Exists(DataFile))
+            {
+                using var reader = new StreamReader(DataFile, true);
+                var jsonstring = await reader.ReadToEndAsync();
+                applicationState = JsonSerializer.Deserialize<ApplicationState>(jsonstring);
+            }
+            else
+            {
+                applicationState = new ApplicationState
+                {
+                    Password = new byte[4] { 0, 0, 0, 0 }
+                };
+            }
+        }
+        #endregion
+
         #region BluetoothEvent 
-        private void BLEDataReceived(byte[] receiveData)
+        private void OnDataReceived(byte[] receiveData)
         {
             if (receiveData.Length < 4 || receiveData[0] != FrameEncoder.StartFrame || receiveData[^1] != FrameEncoder.EndFrame)
             {
@@ -188,34 +276,32 @@ namespace WallEClock
 
         }
 
-        public void HandleMessage(byte[] data)
+        public async void OnDeviceConnected(bool success, Java.Lang.Object device)
         {
-            BLEDataReceived(data);
-        }
-
-        public async void DeviceConnected(bool success, Java.Lang.Object device)
-        {
-            await Task.Delay(100);
-            await bluetoothSocket.OutputStream.WriteAsync(FrameEncoder.Encode(FrameEncoder.GetInfoCommand, password));
-            await Task.Delay(5000);
-            byte[] buffer = new byte[1024];
-
             try
             {
-                if (bluetoothSocket.InputStream.IsDataAvailable())
-                {
-                    int bytes = await bluetoothSocket.InputStream.ReadAsync(buffer);
-                    handler.ObtainMessage(2, bytes, -1, buffer)
-                            .SendToTarget();
-                    deviceListPage.LayoutGoToRight(150, 0);
-                    homePage.LayoutFadein(300, 150);
-                }
+                await SocketWriteAsync(FrameEncoder.GetInfoCommand);
+                await Task.Delay(200);
+                await ReadMessage();
+
+                await SocketWriteAsync(FrameEncoder.SetTimeCommand, GetTimeData());
+                await Task.Delay(200);
+                await ReadMessage();
             }
             catch
             {
-                // break;
             }
-            ////thread.Start();
+        }
+
+        private async Task ReadMessage()
+        {
+            byte[] buffer = new byte[1024];
+            if (bluetoothSocket.InputStream.IsDataAvailable())
+            {
+                int bytes = await bluetoothSocket.InputStream.ReadAsync(buffer);
+                handler.ObtainMessage(2, bytes, -1, buffer)
+                        .SendToTarget();
+            }
         }
 
         private void OnDeviceDiscoveried(object sender, BluetoothDevice device)
@@ -227,12 +313,23 @@ namespace WallEClock
             Devices.Add(device);
             listviewAdapter.NotifyDataSetChanged();
         }
+
         #endregion
+
+        private byte[] GetTimeData()
+        {
+            DateTime time = DateTime.Now;
+            return new byte[]
+            {
+                (byte)time.Hour, (byte)time.Minute, (byte)time.Second,
+                (byte)time.Day, (byte)time.Month, (byte)(time.Year - 2000)
+            };
+        }
     }
 
     public class ApplicationState
     {
         public string DeviceAddress { get; set; }
-        public string Password { get; set; }
+        public byte[] Password { get; set; }
     }
 }

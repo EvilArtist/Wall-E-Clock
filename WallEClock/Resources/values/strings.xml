@@ -29,5 +29,10 @@
   <string name="invalid_message">Dữ liệu nhận được không đúng định dạng</string>
   <string name="password_incorrect">Mật khẩu không đúng</string>
   <string name="something_wrong">Đã có lỗi xảy ra</string>
+  <string name="bluetooth_not_available">Bluetooth chưa được thiết lập</string>
+  <string name="bluetooth_disconnected">Bluetooth đã mất kết nối</string>
+
+
+  <string name="connecting">Đang kết nối</string>
 </resources>
  

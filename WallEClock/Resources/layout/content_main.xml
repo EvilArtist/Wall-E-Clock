@@ -34,4 +34,13 @@
         layout="@layout/devicespage" 
         android:id="@+id/layout_device_list"
         android:visibility="invisible" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#Afff"
+        tools:text="@string/connecting"
+        android:textSize="@dimen/abc_text_size_large_material"
+        android:textColor="@color/colorPrimary"
+        android:gravity="center"
+        android:id="@+id/connecting_view"/>
 </RelativeLayout>
