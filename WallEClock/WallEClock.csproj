@@ -349,7 +349,7 @@
     </AndroidResource>
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="Resources\layout\birthday_diaglog.xml">
+    <AndroidResource Include="Resources\layout\birthday_setting.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>

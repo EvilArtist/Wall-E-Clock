@@ -49,6 +49,7 @@ namespace WallEClock
 
         private void CardViewNightMode_Click(object sender, EventArgs e)
         {
+            InitializeNightModeLayout();
             homePage.LayoutFadeout(150, 0);
             nightModeSettingPage.LayoutComeFromRight(300, 150);
         }
@@ -77,11 +78,6 @@ namespace WallEClock
             int minute = Convert.ToInt32(spliters[1]);
             TimePickerDialog diaglog = new TimePickerDialog(this, onTimeSelect, hour, minute, true);
             diaglog.Show();
-        }
-
-        private void SwitchNightMode_CheckedChange(object sender, CompoundButton.CheckedChangeEventArgs e)
-        {
-            clockConfiguration.NightModeEnable = (sender as SwitchCompat).Checked;
         }
         #endregion
 
@@ -177,7 +173,7 @@ namespace WallEClock
                 byte enable = (clockConfiguration.Hollidays & Holliday.DailyMessage) == Holliday.DailyMessage ? (byte)0x01 : (byte)0x00;
                 List<byte> message = clockConfiguration.DailyMessage.Select(x => (byte)fontEncode.GetIndex(x)).ToList();
                 message.Insert(0, enable);
-                await SocketWriteAsync(FrameEncoder.SetTetCommand, message.ToArray());
+                await SocketWriteAsync(FrameEncoder.SetDailyMessageCommand, message.ToArray());
                 await ReadMessage();
             }
         }
@@ -197,6 +193,7 @@ namespace WallEClock
             alert.SetPositiveButton("Ok", onOKClick);
             var digalog = alert.Show();
             input = digalog.FindViewById<EditText>(Resource.Id.input_daily_message);
+            input.Text = clockConfiguration.DailyMessage;
         }
 
         #endregion
@@ -210,6 +207,35 @@ namespace WallEClock
             applicationState.DeviceAddress = device.Address;
             await ConnectDevice(device.Address, true);
         }
+        #endregion
+
+        #region 
+
+        private void CardViewBirthday_Click(object sender, EventArgs e)
+        {
+            InitializeBirthdaysSetting();
+            homePage.LayoutFadeout(150, 0);
+            birthdaySettingPage.LayoutComeFromRight(300, 150);
+
+        }
+
+        private async void BackToHome_Click(object sender, EventArgs e)
+        {
+            birthdaySettingPage.LayoutGoToRight(150, 0);
+            homePage.LayoutFadein(300, 150);
+            await SendBirthDayToClock();
+        }
+
+        private async Task SendBirthDayToClock()
+        {
+            for (int i = 0; i < clockConfiguration.Birthdays.Count; i++)
+            {
+                var data = clockConfiguration.Birthdays[i].GetBirthDayData(i);
+                await SocketWriteAsync(FrameEncoder.SetBirthdayCommand, data);
+                await Task.Delay(100);
+            }
+        }
+
         #endregion
     }
 }

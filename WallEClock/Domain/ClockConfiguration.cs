@@ -83,11 +83,11 @@ namespace WallEClock.Domain
         {
             Birthdays = new ObservableCollection<Birthday>()
             {
-                new Birthday{Enable = false},
-                new Birthday{Enable = false},
-                new Birthday{Enable = false},
-                new Birthday{Enable = false},
-                new Birthday{Enable = false},
+                new Birthday(),
+                new Birthday(),
+                new Birthday(),
+                new Birthday(),
+                new Birthday(),
             };
             Birthdays.CollectionChanged += Birthdays_CollectionChanged;
         }
@@ -169,7 +169,33 @@ namespace WallEClock.Domain
         public int Day {
             get { return day; }
             set {
-                day = value;
+                int maxDay;
+                switch (Month)
+                {
+                    case 1:
+                    case 3:
+                    case 5:
+                    case 7:
+                    case 8:
+                    case 10:
+                    case 12:
+                        maxDay = 31;
+                        break;
+                    case 2:
+                        maxDay = 29;
+                        break;
+                    default:
+                        maxDay = 30;
+                        break;
+                }
+                if (value < 1 || value > maxDay)
+                {
+                    day = 1;
+                }
+                else
+                {
+                    day = value;
+                }
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Day)));
             }
         }
@@ -178,7 +204,15 @@ namespace WallEClock.Domain
 
         public int Month {
             get { return month; }
-            set { month = value;
+            set {
+                if (value < 1 || value > 12)
+                {
+                    month = 1;
+                }
+                else
+                {
+                    month = value;
+                }
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Month)));
             }
         }
@@ -194,6 +228,31 @@ namespace WallEClock.Domain
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
+        private readonly FontEncode fontEncode = new FontEncode();
+        public Birthday()
+        {
+            Enable = false;
+            Day = 1;
+            Month = 1;
+        }
+
+        public byte[] GetBirthDayData(int index)
+        {
+            List<byte> data = new List<byte>
+            {
+                (byte)index,
+                (byte)(Enable ? 0x01: 0x00),
+                (byte)Day,
+                (byte)Month,
+            };
+
+            foreach (var @char in Name)
+            {
+                data.Add((byte)fontEncode.GetIndex(@char));
+            }
+            
+            return data.ToArray();
+        }
     }
 
     [Flags]

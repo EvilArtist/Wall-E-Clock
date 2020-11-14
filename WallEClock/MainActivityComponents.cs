@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -26,6 +27,7 @@ namespace WallEClock
         private View nightModeSettingPage;
         private View messagePage;
         private View deviceListPage;
+        private View birthdaySettingPage;
 
         private TextClock textClock;
         private TextView dateView;
@@ -45,7 +47,7 @@ namespace WallEClock
         private TextView textDailyMessage;
         private string DataFile => System.IO.Path.Combine(Xamarin.Essentials.FileSystem.AppDataDirectory, "applicationstate.json");
 
-
+        private InputPickerPair[] birthdayResources;
         private ListView bleDeviceList;
         private bool requestScan = false;
 
@@ -57,18 +59,15 @@ namespace WallEClock
             homePage = FindViewById(Resource.Id.homepage);
             nightModeSettingPage = FindViewById(Resource.Id.layout_night_mode_setting);
             messagePage = FindViewById(Resource.Id.layout_message_setting);
+            birthdaySettingPage = FindViewById(Resource.Id.layout_birthday_setting);
 
             CardView cardViewNightMode = FindViewById<CardView>(Resource.Id.materialCardViewNightMode);
             cardViewNightMode.Click += CardViewNightMode_Click;
             CardView cardViewMessage = FindViewById<CardView>(Resource.Id.materialCardViewMessage);
             cardViewMessage.Click += CardViewMessage_Click;
 
-            InitializeNightModeLayout();
-            InitializeEffectSetting();
-            InitializeMessageSetting();
-            InitializeDevice();
-
-            //textMessageInfo = FindViewById<TextView>(Resource.Id.messageInfo);
+            CardView cardViewBirthday = FindViewById<CardView>(Resource.Id.materialCardViewBirthday);
+            cardViewBirthday.Click += CardViewBirthday_Click;
 
             clockConfiguration = new ClockConfiguration()
             {
@@ -80,9 +79,84 @@ namespace WallEClock
                 NightModeStartMinute = 0,
                 Hollidays = Holliday.Chrismas | Holliday.DailyMessage | Holliday.LunarNewYear | Holliday.SolarNewYear
             };
+
+            InitializeEffectSetting();
+            InitializeMessageSetting();
+            InitializeDevice();
+            //textMessageInfo = FindViewById<TextView>(Resource.Id.messageInfo);
+
             clockConfiguration.PropertyChanged += ClockConfiguration_PropertyChanged;
             clockConfiguration.NightModeEnable = true;
             clockConfiguration.EffectEnable = true;
+
+        }
+
+        private void InitializeBirthdaysSetting()
+        {
+            Button backToHome = FindViewById<Button>(Resource.Id.buttonCancelBirthday);
+            backToHome.Click += BackToHome_Click;
+            birthdayResources = new InputPickerPair[]{
+                new InputPickerPair { 
+                    Input = Resource.Id.input_birthday1,
+                    Button = Resource.Id.button_birthday_picker1, 
+                    Index = 0,
+                    Name = Resource.Id.input_birthday_name1,
+                    Switch = Resource.Id.switch_birthday1
+                },
+                new InputPickerPair {
+                    Input = Resource.Id.input_birthday2,
+                    Button = Resource.Id.button_birthday_picker2,
+                    Index = 1,
+                    Name = Resource.Id.input_birthday_name2,
+                    Switch = Resource.Id.switch_birthday2
+                },
+                new InputPickerPair {
+                    Input = Resource.Id.input_birthday3,
+                    Button = Resource.Id.button_birthday_picker3,
+                    Index = 2,
+                    Name = Resource.Id.input_birthday_name3,
+                    Switch = Resource.Id.switch_birthday3
+                },
+                new InputPickerPair {
+                    Input = Resource.Id.input_birthday4,
+                    Button = Resource.Id.button_birthday_picker4,
+                    Index = 3,
+                    Name = Resource.Id.input_birthday_name4,
+                    Switch = Resource.Id.switch_birthday4
+                },
+                new InputPickerPair {
+                    Input = Resource.Id.input_birthday5,
+                    Button = Resource.Id.button_birthday_picker5,
+                    Index = 4,
+                    Name = Resource.Id.input_birthday_name5,
+                    Switch = Resource.Id.switch_birthday5
+                },
+            };
+            foreach (var resource in birthdayResources)
+            {
+                SwitchCompat switchCompat = FindViewById<SwitchCompat>(resource.Switch);
+                switchCompat.Checked = clockConfiguration.Birthdays[resource.Index].Enable;
+                switchCompat.CheckedChange += (s, e) => clockConfiguration.Birthdays[resource.Index].Enable = switchCompat.Checked;
+                EditText inputName = FindViewById<EditText>(resource.Name);
+                inputName.Text = clockConfiguration.Birthdays[resource.Index].Name;
+                inputName.TextChanged += (s, e) => clockConfiguration.Birthdays[resource.Index].Name = inputName.Text;
+                EditText inputDay = FindViewById<EditText>(resource.Input);
+                inputDay.Text = $"{clockConfiguration.Birthdays[resource.Index].Day:D2}/{clockConfiguration.Birthdays[resource.Index].Month:D2}";
+                MaterialButton buttonClick1 = FindViewById<MaterialButton>(resource.Button);
+                buttonClick1.Click += (s, e) =>
+                {
+                    DatePickerDialog diaglog = new DatePickerDialog(this);
+                    diaglog.DatePicker.DateTime = new DateTime(DateTime.Now.Year, clockConfiguration.Birthdays[resource.Index].Month, clockConfiguration.Birthdays[resource.Index].Day);
+                    diaglog.DateSet += (s1, e1) =>
+                    {
+                        clockConfiguration.Birthdays[resource.Index].Day = e1.Date.Day;
+                        clockConfiguration.Birthdays[resource.Index].Month = e1.Date.Month;
+                        inputDay.Text = $"{e1.Date:dd/MM}";
+                    };
+                    diaglog.Show();
+                };
+            }
+           
         }
 
         private void InitializeMessageSetting()
@@ -121,12 +195,16 @@ namespace WallEClock
         private void InitializeNightModeLayout()
         {
             switchNightMode = FindViewById<SwitchCompat>(Resource.Id.switch_night_mode);
-            switchNightMode.CheckedChange += SwitchNightMode_CheckedChange;
+            switchNightMode.CheckedChange += (s,e) => clockConfiguration.NightModeEnable = switchNightMode.Checked; ;
 
             nightModeStart = FindViewById<TextView>(Resource.Id.nightModeStart);
-            nightModeEnd = FindViewById<TextView>(Resource.Id.nightModeEnd);
+            nightModeStart.Text = $"{clockConfiguration.NightModeStartHour:D2}:{clockConfiguration.NightModeStartMinute:D2}";
             nightModeStart.Click += NightModeTime_Click;
+
+            nightModeEnd = FindViewById<TextView>(Resource.Id.nightModeEnd);
+            nightModeEnd.Text = $"{clockConfiguration.NightModeEndHour:D2}:{clockConfiguration.NightModeEndMinute:D2}";
             nightModeEnd.Click += NightModeTime_Click;
+
             var buttonCancelModeNightMode = FindViewById<MaterialButton>(Resource.Id.buttonCancelNightMode);
             buttonCancelModeNightMode.Click += ButtonCancelNightMode_Click; ;
         }
@@ -175,7 +253,6 @@ namespace WallEClock
         private void ClockConfiguration_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             var config = sender as ClockConfiguration;
-            //TODO send data here
             switch (e.PropertyName)
             {
                 case nameof(ClockConfiguration.ClockColor):
@@ -215,8 +292,6 @@ namespace WallEClock
         private void SetNighmode(ClockConfiguration config)
         {
             TextView view = FindViewById<TextView>(Resource.Id.nightmode_infor);
-            nightModeStart.Text = $"{config.NightModeStartHour:D2}:{config.NightModeStartMinute:D2}";
-            nightModeEnd.Text = $"{config.NightModeEndHour:D2}:{config.NightModeEndMinute:D2}";
             if (config.NightModeEnable)
             {
                 view.Text = $"{config.NightModeStartHour:D2}:{config.NightModeStartMinute:D2} - {config.NightModeEndHour:D2}:{config.NightModeEndMinute:D2}";
@@ -227,5 +302,14 @@ namespace WallEClock
             }
         }
         #endregion
+    }
+
+    class InputPickerPair
+    {
+        public int Switch { get; set; }
+        public int Input { get; set; }
+        public int Button { get; set; }
+        public int Index { get; set; }
+        public int Name { get; set; }
     }
 }

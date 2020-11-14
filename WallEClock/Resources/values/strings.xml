@@ -12,6 +12,11 @@
   <string name="random_effect">Ngẫu nhiên</string>
   <string name="message_setting">Sự kiện</string>
   <string name="birthday">Sinh nhật</string>
+  <string name="birthday1">Sinh nhật 1</string>
+  <string name="birthday2">Sinh nhật 2</string>
+  <string name="birthday3">Sinh nhật 3</string>
+  <string name="birthday4">Sinh nhật 4</string>
+  <string name="birthday5">Sinh nhật 5</string>
   <string name="birthdayCount">ngày sinh</string>
   <string name="solar_newyear">Năm mới</string>
   <string name="lunar_newyear">Tết nguyên đán</string>
@@ -22,6 +27,7 @@
   <string name="name">Tên</string>
   <string name="day">Ngày</string>
   <string name="month">Tháng</string>
+
 
   <string name="device_list">Danh sách thiết bị</string>
   <string name="scanning">Đang quét các thiết bị quanh đây</string>
@@ -34,5 +40,7 @@
 
 
   <string name="connecting">Đang kết nối</string>
+
+
 </resources>
  
