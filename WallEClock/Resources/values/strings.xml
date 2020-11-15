@@ -23,7 +23,7 @@
   <string name="xmas">Giáng sinh</string>
   <string name="daily">Thông điệp hàng ngày</string>
   <string name="daily_example">Ngày mới vui vẻ</string>
-  <string name="event_example">Sinh nhật, Năm mới...</string>
+  <string name="event_example">Năm mới, Tết nguyên đán ...</string>
   <string name="name">Tên</string>
   <string name="day">Ngày</string>
   <string name="month">Tháng</string>
@@ -44,6 +44,8 @@
   <string name="message_tet_disable">Đã tắt lời chúc mừng năm mới âm lịch</string>
   <string name="message_xmas_enable">Đã bật lời chúc mừng giáng sinh</string>
   <string name="message_xmas_disable">Đã tắt lời chúc mừng giáng sinh</string>
+  <string name="message_effect_enable">Đã bật hiệu ứng chuyển đổi ngẫu nhiên</string>
+  <string name="message_effect_disable">Đã cài đặt hiệu ứng chuyển đổi đơn giản</string>
 
   <string name="device_list">Danh sách thiết bị</string>
   <string name="scanning">Đang quét các thiết bị quanh đây</string>

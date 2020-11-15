@@ -27,6 +27,7 @@ namespace WallEClock
             Color color = (view.Background as ColorDrawable).Color;
             clockConfiguration.ClockColor = color;
             await SocketWriteAsync(FrameEncoder.SetColorCommand, color.R, color.G, color.B);
+            await ReadMessageAsync();
         }
         #endregion
 
@@ -46,6 +47,7 @@ namespace WallEClock
             nightModeSettingPage.LayoutGoToRight(150, 0);
             homePage.LayoutFadein(300, 150);
             await SocketWriteAsync(FrameEncoder.SetNightModeCommand, clockConfiguration.GetNightModeData());
+            await ReadMessageAsync();
         }
 
         private void CardViewNightMode_Click(object sender, EventArgs e)
@@ -86,6 +88,7 @@ namespace WallEClock
         private async void SetClockEffect()
         {
             await SocketWriteAsync(FrameEncoder.SetEffectCommand, clockConfiguration.EffectEnable ? (byte)0x01 : (byte)0x00);
+            await ReadMessageAsync();
         }
         #endregion
 
@@ -115,7 +118,7 @@ namespace WallEClock
             if (bluetoothSocket.IsConnected)
             {
                 await SocketWriteAsync(FrameEncoder.SetNewYearCommand, (byte)(switchSolarNewyear.Checked ? 0x01 : 0x00));
-                await ReadMessage();
+                await ReadMessageAsync();
             }
         }
 
@@ -132,7 +135,7 @@ namespace WallEClock
             if (bluetoothSocket.IsConnected)
             {
                 await SocketWriteAsync(FrameEncoder.SetTetCommand, (byte)(switchLunarNewyear.Checked ? 0x01 : 0x00));
-                await ReadMessage();
+                await ReadMessageAsync();
             }
         }
 
@@ -149,7 +152,7 @@ namespace WallEClock
             if (bluetoothSocket.IsConnected)
             {
                 await SocketWriteAsync(FrameEncoder.SetXmasCommand, (byte)(switchXmas.Checked ? 0x01 : 0x00));
-                await ReadMessage();
+                await ReadMessageAsync();
             }
         }
 
@@ -175,7 +178,7 @@ namespace WallEClock
                 List<byte> message = clockConfiguration.DailyMessage.Select(x => (byte)fontEncode.GetIndex(x)).ToList();
                 message.Insert(0, enable);
                 await SocketWriteAsync(FrameEncoder.SetDailyMessageCommand, message.ToArray());
-                await ReadMessage();
+                await ReadMessageAsync();
             }
         }
 
@@ -217,7 +220,6 @@ namespace WallEClock
             InitializeBirthdaysSetting();
             homePage.LayoutFadeout(150, 0);
             birthdaySettingPage.LayoutComeFromRight(300, 150);
-
         }
 
         private async void BackToHome_Click(object sender, EventArgs e)
@@ -233,7 +235,7 @@ namespace WallEClock
             {
                 var data = clockConfiguration.Birthdays[i].GetBirthDayData(i);
                 await SocketWriteAsync(FrameEncoder.SetBirthdayCommand, data);
-                await Task.Delay(100);
+                await ReadMessageAsync();
             }
         }
 
@@ -266,7 +268,7 @@ namespace WallEClock
                 if (isPasswordCorrect)
                 {
                     await SocketWriteAsync(FrameEncoder.SetPasswordCommand, data);
-                    await ReadMessage();
+                    await ReadMessageAsync();
                     applicationState.Password = data;
                     await SaveConfigAsync();
                 }

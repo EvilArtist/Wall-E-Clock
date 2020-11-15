@@ -258,6 +258,10 @@ namespace WallEClock
             {
                 clockConfiguration.ParseFromData(receiveData);
             }
+            else if (receiveData[1] == FrameEncoder.SetEffectCommand)
+            {
+                ShowSnackbar( clockConfiguration.EffectEnable ? Resource.String.message_effect_enable : Resource.String.message_effect_disable );
+            }
             else if (receiveData[1] == FrameEncoder.SetPasswordCommand)
             {
                 ShowSnackbar(Resource.String.message_password_updated);
@@ -354,24 +358,23 @@ namespace WallEClock
             try
             {
                 await SocketWriteAsync(FrameEncoder.GetInfoCommand);
-                await ReadMessage();
+                await ReadMessageAsync();
                 await SocketWriteAsync(FrameEncoder.SetTimeCommand, GetTimeData());
-                await ReadMessage();
+                await ReadMessageAsync();
             }
             catch
             {
             }
         }
 
-        private async Task ReadMessage()
+        private async Task ReadMessageAsync()
         {
-            await Task.Delay(100);
+            await Task.Delay(200);
             byte[] buffer = new byte[1024];
             if (bluetoothSocket.InputStream.IsDataAvailable())
             {
                 int bytes = await bluetoothSocket.InputStream.ReadAsync(buffer);
-                handler.ObtainMessage(2, bytes, -1, buffer)
-                        .SendToTarget();
+                OnDataReceived(buffer.Where((x,i) => i < bytes).ToArray());
             }
         }
 

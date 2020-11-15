@@ -84,8 +84,15 @@ namespace WallEClock
 
         protected override void OnResume()
         {
-            bluetoothSocket?.Connect();
+            Reconnect();
             base.OnResume();
+        }
+        private async void Reconnect()
+        {
+            if (applicationState != null && !string.IsNullOrEmpty(applicationState.DeviceAddress))
+            {
+                await ConnectDevice(applicationState.DeviceAddress, false);
+            }
         }
 
         protected override void OnStart()

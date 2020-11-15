@@ -4760,109 +4760,115 @@ namespace WallEClock
 			public const int message_daily_updated = 2131689543;
 			
 			// aapt resource value: 0x7F0F0048
-			public const int message_newyear_disable = 2131689544;
+			public const int message_effect_disable = 2131689544;
 			
 			// aapt resource value: 0x7F0F0049
-			public const int message_newyear_enable = 2131689545;
+			public const int message_effect_enable = 2131689545;
 			
 			// aapt resource value: 0x7F0F004A
-			public const int message_nightmode_disable = 2131689546;
+			public const int message_newyear_disable = 2131689546;
 			
 			// aapt resource value: 0x7F0F004B
-			public const int message_nightmode_enable = 2131689547;
+			public const int message_newyear_enable = 2131689547;
 			
 			// aapt resource value: 0x7F0F004C
-			public const int message_password_updated = 2131689548;
+			public const int message_nightmode_disable = 2131689548;
 			
 			// aapt resource value: 0x7F0F004D
-			public const int message_setting = 2131689549;
+			public const int message_nightmode_enable = 2131689549;
 			
 			// aapt resource value: 0x7F0F004E
-			public const int message_tet_disable = 2131689550;
+			public const int message_password_updated = 2131689550;
 			
 			// aapt resource value: 0x7F0F004F
-			public const int message_tet_enable = 2131689551;
+			public const int message_setting = 2131689551;
 			
 			// aapt resource value: 0x7F0F0050
-			public const int message_xmas_disable = 2131689552;
+			public const int message_tet_disable = 2131689552;
 			
 			// aapt resource value: 0x7F0F0051
-			public const int message_xmas_enable = 2131689553;
+			public const int message_tet_enable = 2131689553;
 			
 			// aapt resource value: 0x7F0F0052
-			public const int month = 2131689554;
+			public const int message_xmas_disable = 2131689554;
 			
 			// aapt resource value: 0x7F0F0053
-			public const int mtrl_chip_close_icon_content_description = 2131689555;
+			public const int message_xmas_enable = 2131689555;
 			
 			// aapt resource value: 0x7F0F0054
-			public const int name = 2131689556;
+			public const int month = 2131689556;
 			
 			// aapt resource value: 0x7F0F0055
-			public const int nightModeEnable = 2131689557;
+			public const int mtrl_chip_close_icon_content_description = 2131689557;
 			
 			// aapt resource value: 0x7F0F0056
-			public const int nightModeEnd = 2131689558;
+			public const int name = 2131689558;
 			
 			// aapt resource value: 0x7F0F0057
-			public const int nightModeStart = 2131689559;
+			public const int nightModeEnable = 2131689559;
 			
 			// aapt resource value: 0x7F0F0058
-			public const int night_setting = 2131689560;
+			public const int nightModeEnd = 2131689560;
 			
 			// aapt resource value: 0x7F0F0059
-			public const int off = 2131689561;
+			public const int nightModeStart = 2131689561;
 			
 			// aapt resource value: 0x7F0F005A
-			public const int password_incorect_format = 2131689562;
+			public const int night_setting = 2131689562;
 			
 			// aapt resource value: 0x7F0F005B
-			public const int password_incorrect = 2131689563;
+			public const int off = 2131689563;
 			
 			// aapt resource value: 0x7F0F005C
-			public const int password_toggle_content_description = 2131689564;
+			public const int password_incorect_format = 2131689564;
 			
 			// aapt resource value: 0x7F0F005D
-			public const int path_password_eye = 2131689565;
+			public const int password_incorrect = 2131689565;
 			
 			// aapt resource value: 0x7F0F005E
-			public const int path_password_eye_mask_strike_through = 2131689566;
+			public const int password_toggle_content_description = 2131689566;
 			
 			// aapt resource value: 0x7F0F005F
-			public const int path_password_eye_mask_visible = 2131689567;
+			public const int path_password_eye = 2131689567;
 			
 			// aapt resource value: 0x7F0F0060
-			public const int path_password_strike_through = 2131689568;
+			public const int path_password_eye_mask_strike_through = 2131689568;
 			
 			// aapt resource value: 0x7F0F0061
-			public const int pin_content_desc = 2131689569;
+			public const int path_password_eye_mask_visible = 2131689569;
 			
 			// aapt resource value: 0x7F0F0062
-			public const int pin_label_text = 2131689570;
+			public const int path_password_strike_through = 2131689570;
 			
 			// aapt resource value: 0x7F0F0063
-			public const int random_effect = 2131689571;
+			public const int pin_content_desc = 2131689571;
 			
 			// aapt resource value: 0x7F0F0064
-			public const int scanning = 2131689572;
+			public const int pin_label_text = 2131689572;
 			
 			// aapt resource value: 0x7F0F0065
-			public const int search_menu_title = 2131689573;
+			public const int random_effect = 2131689573;
 			
 			// aapt resource value: 0x7F0F0066
-			public const int simple_effect = 2131689574;
+			public const int scanning = 2131689574;
 			
 			// aapt resource value: 0x7F0F0067
-			public const int solar_newyear = 2131689575;
+			public const int search_menu_title = 2131689575;
 			
 			// aapt resource value: 0x7F0F0068
-			public const int something_wrong = 2131689576;
+			public const int simple_effect = 2131689576;
 			
 			// aapt resource value: 0x7F0F0069
-			public const int status_bar_notification_info_overflow = 2131689577;
+			public const int solar_newyear = 2131689577;
 			
 			// aapt resource value: 0x7F0F006A
-			public const int xmas = 2131689578;
+			public const int something_wrong = 2131689578;
+			
+			// aapt resource value: 0x7F0F006B
+			public const int status_bar_notification_info_overflow = 2131689579;
+			
+			// aapt resource value: 0x7F0F006C
+			public const int xmas = 2131689580;
 			
 			static String()
 			{
