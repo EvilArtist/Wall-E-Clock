@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
@@ -190,7 +191,7 @@ namespace WallEClock
                 clockConfiguration.DailyMessage = input.Text;
                 await SendDailySetting();
             }
-            alert.SetPositiveButton("Ok", onOKClick);
+            alert.SetPositiveButton("Lưu", onOKClick);
             var digalog = alert.Show();
             input = digalog.FindViewById<EditText>(Resource.Id.input_daily_message);
             input.Text = clockConfiguration.DailyMessage;
@@ -233,6 +234,81 @@ namespace WallEClock
                 var data = clockConfiguration.Birthdays[i].GetBirthDayData(i);
                 await SocketWriteAsync(FrameEncoder.SetBirthdayCommand, data);
                 await Task.Delay(100);
+            }
+        }
+
+        #endregion
+
+        #region PasswordInput
+        List<EditText> digitsEditText = new List<EditText>();
+        private void MaterialCardViewLock_Click(object sender, EventArgs e)
+        {
+            AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+            alert.SetTitle("Cài đặt mật khẩu");
+            alert.SetView(LayoutInflater.Inflate(Resource.Layout.password_input, null));
+            async void onOKClick(object s, DialogClickEventArgs ev)
+            {
+                Regex regex = new Regex("^\\d$");
+                byte[] data = { applicationState.Password[0], applicationState.Password[1], applicationState.Password[2], applicationState.Password[3] } ;
+                bool isPasswordCorrect = true;
+                for (int i = 0; i < digitsEditText.Count; i++)
+                {
+                    if (regex.IsMatch(digitsEditText[i].Text))
+                    {
+                        data[i] = Convert.ToByte(digitsEditText[i].Text);
+                    }
+                    else
+                    {
+                        isPasswordCorrect = false;
+                    }
+                }
+                if (isPasswordCorrect)
+                {
+                    await SocketWriteAsync(FrameEncoder.SetPasswordCommand, data);
+                    await ReadMessage();
+                    applicationState.Password = data;
+                    await SaveConfigAsync();
+                }
+                else
+                {
+                    ShowSnackbar(Resource.String.password_incorect_format);
+                }
+            }
+            alert.SetPositiveButton("Lưu", onOKClick);
+            var digalog = alert.Show();
+            
+            InitializePassword(digalog);
+        }
+
+        private void InitializePassword(AlertDialog dialog)
+        {
+           digitsEditText = new List<EditText>() {
+                dialog.FindViewById<EditText>(Resource.Id.pin_first_edittext),
+                dialog.FindViewById<EditText>(Resource.Id.pin_second_edittext),
+                dialog.FindViewById<EditText>(Resource.Id.pin_third_edittext),
+                dialog.FindViewById<EditText>(Resource.Id.pin_forth_edittext),
+            };
+            for (int i = 0; i < digitsEditText.Count; i++)
+            {
+                var currentInput = digitsEditText[i];
+                var nextInput = digitsEditText[(i + 1) % digitsEditText.Count];
+                currentInput.TextChanged += (s, e) =>
+                {
+                    if (currentInput.Text.Length > 1)
+                    {
+                        currentInput.Text = currentInput.Text.Substring(currentInput.Text.Length - 1, 1);
+                        nextInput.Focusable = true;
+                        nextInput.FocusableInTouchMode = true;
+                        nextInput.RequestFocus();
+                    }
+                    else if (currentInput.Text.Length == 1)
+                    {
+                        nextInput.Focusable = true;
+                        nextInput.FocusableInTouchMode = true;
+                        nextInput.RequestFocus();
+                    }
+                };
             }
         }
 

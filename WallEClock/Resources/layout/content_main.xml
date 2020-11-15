@@ -6,48 +6,49 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/content_main"
-    xmlns:card_view="http://schemas.android.com/apk/res-auto">
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_layout">
 
-    <include
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        layout="@layout/homepage" 
-        android:id="@+id/homepage"
-        />
-    <include
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        layout="@layout/night_mode_setting"
-        android:id="@+id/layout_night_mode_setting"
-        android:visibility="invisible"/>
-    <include
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        layout="@layout/message_setting" 
-        android:id="@+id/layout_message_setting"
-        android:visibility="invisible"
-      />
+        <include
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            layout="@layout/homepage" 
+            android:id="@+id/homepage"
+            />
+        <include
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            layout="@layout/night_mode_setting"
+            android:id="@+id/layout_night_mode_setting"
+            android:visibility="invisible"/>
+        <include
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            layout="@layout/message_setting" 
+            android:id="@+id/layout_message_setting"
+            android:visibility="invisible"
+          />
     
-    <include
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        layout="@layout/devicespage" 
-        android:id="@+id/layout_device_list"
-        android:visibility="invisible" />
-    <include
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        layout="@layout/birthday_setting"
-        android:id="@+id/layout_birthday_setting"
-        android:visibility="invisible"/>
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#Afff"
-        tools:text="@string/connecting"
-        android:textSize="@dimen/abc_text_size_large_material"
-        android:textColor="@color/colorPrimary"
-        android:gravity="center"
-        android:id="@+id/connecting_view"
-        android:clickable="true"/>
+        <include
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            layout="@layout/devicespage" 
+            android:id="@+id/layout_device_list"
+            android:visibility="invisible" />
+        <include
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            layout="@layout/birthday_setting"
+            android:id="@+id/layout_birthday_setting"
+            android:visibility="invisible"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#Afff"
+            tools:text="@string/connecting"
+            android:textSize="@dimen/abc_text_size_large_material"
+            android:textColor="@color/colorPrimary"
+            android:gravity="center"
+            android:id="@+id/connecting_view"
+            android:clickable="true"/>
 </RelativeLayout>

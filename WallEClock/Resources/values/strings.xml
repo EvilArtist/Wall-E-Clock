@@ -27,7 +27,23 @@
   <string name="name">Tên</string>
   <string name="day">Ngày</string>
   <string name="month">Tháng</string>
+  <string name="lock">Khoá đồng hồ</string>
+  <string name="lock_message">Cài đặt mật khẩu để bảo vệ đồng hồ</string>
+  <string name="pin_content_desc">Nhập mật khẩu</string>
+  <string name="pin_label_text">Mật khẩu</string>
+  <string name="password_incorect_format">Mật khẩu không hợp lệ</string>
 
+  <string name="message_password_updated">Đã cập nhật mật khẩu</string>
+  <string name="message_birthday_updated">Đã cập nhật các ngày sinh nhật</string>
+  <string name="message_daily_updated">Đã cập nhật lời chúc hàng ngày</string>
+  <string name="message_newyear_enable">Đã bật lời chúc mừng năm mới</string>
+  <string name="message_newyear_disable">Đã tắt lời chúc mừng năm mới</string>
+  <string name="message_nightmode_enable">Đã bật chế độ ban đêm</string>
+  <string name="message_nightmode_disable">Đã tắt chế độ ban đêm</string>
+  <string name="message_tet_enable">Đã bật lời chúc mừng năm mới âm lịch</string>
+  <string name="message_tet_disable">Đã tắt lời chúc mừng năm mới âm lịch</string>
+  <string name="message_xmas_enable">Đã bật lời chúc mừng giáng sinh</string>
+  <string name="message_xmas_disable">Đã tắt lời chúc mừng giáng sinh</string>
 
   <string name="device_list">Danh sách thiết bị</string>
   <string name="scanning">Đang quét các thiết bị quanh đây</string>

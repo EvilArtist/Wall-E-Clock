@@ -69,6 +69,9 @@ namespace WallEClock
             CardView cardViewBirthday = FindViewById<CardView>(Resource.Id.materialCardViewBirthday);
             cardViewBirthday.Click += CardViewBirthday_Click;
 
+            View materialCardViewLock = FindViewById(Resource.Id.materialCardViewLock);
+            materialCardViewLock.Click += MaterialCardViewLock_Click;
+
             clockConfiguration = new ClockConfiguration()
             {
                 ClockColor = new Android.Graphics.Color(255, 68, 0),

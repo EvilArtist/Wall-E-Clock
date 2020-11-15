@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Android;
 using Android.App;
@@ -13,6 +14,7 @@ using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
+using Android.Support.Design.Widget;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
@@ -127,7 +129,7 @@ namespace WallEClock
             {
                 bluetoothSocket = device.CreateRfcommSocketToServiceRecord(bluetoothUUID);
                 Task timeout = Task.Delay(5000);
-                Task connectTask =bluetoothSocket.ConnectAsync();
+                Task connectTask = bluetoothSocket.ConnectAsync();
                 await Task.WhenAny(timeout, connectTask);
                 
                 if (saveAddress)
@@ -144,8 +146,7 @@ namespace WallEClock
                 }
                 else
                 {
-                    handler.ObtainMessage(ClockHandler.CONNECTING_STATUS, 1, -1, address)
-                           .SendToTarget();
+                    ShowSnackbar(Resource.String.cannot_connect);
                 }
             }
             catch
@@ -169,11 +170,7 @@ namespace WallEClock
         {
             if (bluetoothSocket == null)
             {
-                RunOnUiThread(() =>
-                {
-                    Toast toast = Toast.MakeText(this, Resource.String.bluetooth_not_available, ToastLength.Short);
-                    toast.Show();
-                });
+                ShowSnackbar(Resource.String.bluetooth_not_available);
                 return;
             }
             if (!bluetoothSocket.IsConnected)
@@ -184,11 +181,7 @@ namespace WallEClock
                 }
                 else
                 {
-                    RunOnUiThread(() =>
-                    {
-                        Toast toast = Toast.MakeText(this, Resource.String.bluetooth_not_available, ToastLength.Short);
-                        toast.Show();
-                    });
+                    ShowSnackbar(Resource.String.bluetooth_not_available);
                     return;
                 }
             }
@@ -205,11 +198,7 @@ namespace WallEClock
             }
             catch
             {
-                RunOnUiThread(() =>
-                {
-                    Toast toast = Toast.MakeText(this, Resource.String.bluetooth_disconnected, ToastLength.Short);
-                    toast.Show();
-                });
+                ShowSnackbar(Resource.String.bluetooth_disconnected);
             }
         }
 
@@ -250,30 +239,114 @@ namespace WallEClock
         {
             if (receiveData.Length < 4 || receiveData[0] != FrameEncoder.StartFrame || receiveData[^1] != FrameEncoder.EndFrame)
             {
-                RunOnUiThread(() =>
-                {
-                    Toast toast = Toast.MakeText(this, Resource.String.invalid_message, ToastLength.Long);
-                    toast.Show();
-                });
+                ShowSnackbar(Resource.String.invalid_message);
                 return;
             }
 
             if (receiveData[2] == FrameEncoder.PasswordIncorrect)
             {
-                RunOnUiThread(() => { Toast toast = Toast.MakeText(this, Resource.String.password_incorrect, ToastLength.Long); toast.Show(); });
+                ShowSnackbar(Resource.String.password_incorrect, "Nhập lại mật khẩu", ChangePassword);
                 return;
             }
             if (receiveData[2] == FrameEncoder.Failed)
             {
-                RunOnUiThread(() => { Toast toast = Toast.MakeText(this, Resource.String.something_wrong, ToastLength.Long); toast.Show(); });
+                ShowSnackbar(Resource.String.something_wrong);
                 return;
             }
 
-            if (receiveData[1] == 'G' || receiveData[1] == 'g')
+            if (receiveData[1] == FrameEncoder.GetInfoCommand)
             {
                 clockConfiguration.ParseFromData(receiveData);
             }
+            else if (receiveData[1] == FrameEncoder.SetPasswordCommand)
+            {
+                ShowSnackbar(Resource.String.message_password_updated);
+            }
+            else if (receiveData[1] == FrameEncoder.SetBirthdayCommand)
+            {
+                ShowSnackbar(Resource.String.message_birthday_updated);
+            }
+            else if (receiveData[1] == FrameEncoder.SetDailyMessageCommand)
+            {
+                ShowSnackbar(Resource.String.message_daily_updated);
+            }
+            else if (receiveData[1] == FrameEncoder.SetNewYearCommand)
+            {
+                ShowSnackbar( (clockConfiguration.Hollidays & Holliday.SolarNewYear) == Holliday.SolarNewYear ?
+                    Resource.String.message_newyear_enable : Resource.String.message_newyear_disable);
+            }
+            else if (receiveData[1] == FrameEncoder.SetNightModeCommand)
+            {
+                ShowSnackbar(clockConfiguration.NightModeEnable ?
+                    Resource.String.message_nightmode_enable : Resource.String.message_nightmode_disable);
+            }
+            else if (receiveData[1] == FrameEncoder.SetTetCommand)
+            {
+                ShowSnackbar((clockConfiguration.Hollidays & Holliday.LunarNewYear) == Holliday.LunarNewYear ?
+                    Resource.String.message_tet_enable : Resource.String.message_tet_disable);
+            }
+            else if (receiveData[1] == FrameEncoder.SetXmasCommand)
+            {
+                ShowSnackbar((clockConfiguration.Hollidays & Holliday.Chrismas) == Holliday.Chrismas ?
+                    Resource.String.message_xmas_enable : Resource.String.message_xmas_disable);
+            }
+        }
 
+        private void ChangePassword(View obj)
+        {
+            AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+            alert.SetTitle("Đổi Mật khẩu");
+            alert.SetView(LayoutInflater.Inflate(Resource.Layout.password_input, null));
+            async void onOKClick(object s, DialogClickEventArgs ev)
+            {
+                Regex regex = new Regex("^\\d$");
+                byte[] data = applicationState.Password;
+                bool isPasswordCorrect = true;
+                for (int i = 0; i < digitsEditText.Count; i++)
+                {
+                    if (regex.IsMatch(digitsEditText[i].Text))
+                    {
+                        data[i] = Convert.ToByte(digitsEditText[i].Text);
+                    }
+                    else
+                    {
+                        isPasswordCorrect = false;
+                    }
+                }
+                if (isPasswordCorrect)
+                {
+                    applicationState.Password = data;
+                    await SaveConfigAsync();
+                }
+                else
+                {
+                    ShowSnackbar(Resource.String.password_incorect_format);
+                }
+            }
+            alert.SetPositiveButton("Lưu", onOKClick);
+            var digalog = alert.Show();
+
+            InitializePassword(digalog);
+        }
+
+        private void ShowSnackbar(int resourceStringId)
+        {
+            RunOnUiThread(() =>
+            {
+                Snackbar mySnackbar = Snackbar.Make(FindViewById(Resource.Id.main_layout), resourceStringId, Snackbar.LengthLong);
+                
+                mySnackbar.Show();
+            });
+        }
+        private void ShowSnackbar(int resourceStringId, string actionName, Action<View> actionCallback)
+        {
+            RunOnUiThread(() =>
+            {
+                Snackbar mySnackbar = Snackbar.Make(FindViewById(Resource.Id.main_layout), resourceStringId, Snackbar.LengthLong);
+                mySnackbar.SetAction(actionName, actionCallback);
+                mySnackbar.Show();
+            });
         }
 
         public async void OnDeviceConnected(bool success, Java.Lang.Object device)
@@ -281,11 +354,8 @@ namespace WallEClock
             try
             {
                 await SocketWriteAsync(FrameEncoder.GetInfoCommand);
-                await Task.Delay(200);
                 await ReadMessage();
-
                 await SocketWriteAsync(FrameEncoder.SetTimeCommand, GetTimeData());
-                await Task.Delay(200);
                 await ReadMessage();
             }
             catch
@@ -295,6 +365,7 @@ namespace WallEClock
 
         private async Task ReadMessage()
         {
+            await Task.Delay(100);
             byte[] buffer = new byte[1024];
             if (bluetoothSocket.InputStream.IsDataAvailable())
             {

@@ -58,6 +58,7 @@ namespace WallEClock.Domain
             {
                 Toast.MakeText(context, "Bluetooth Deactivate",
                     ToastLength.Short).Show();
+
             }
             //verificamos que no sea nulo el sensor
             if (Adapter == null)

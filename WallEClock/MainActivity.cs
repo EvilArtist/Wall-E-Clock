@@ -69,6 +69,7 @@ namespace WallEClock
             }
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
+
         protected override void OnDestroy()
         {
             bluetoothSocket?.Close();
@@ -79,6 +80,12 @@ namespace WallEClock
         {
             bluetoothSocket?.Close();
             base.OnStop();
+        }
+
+        protected override void OnResume()
+        {
+            bluetoothSocket?.Connect();
+            base.OnResume();
         }
 
         protected override void OnStart()
