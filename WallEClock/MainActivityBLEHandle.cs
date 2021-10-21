@@ -123,6 +123,9 @@ namespace WallEClock
             {
                 return;
             }
+            TextView connectView = FindViewById<TextView>(Resource.Id.connecting_view);
+            connectView.Visibility = ViewStates.Visible;
+            connectView.Text = "Đang kết nối";
             bluetoothAdapter.CancelDiscovery();
             var device = bluetoothAdapter.GetRemoteDevice(address);
             try
@@ -138,7 +141,6 @@ namespace WallEClock
                 }
                 if (bluetoothSocket.IsConnected)
                 {
-                    View connectView = FindViewById(Resource.Id.connecting_view);
                     connectView.Visibility = ViewStates.Gone;
 
                     handler.ObtainMessage(ClockHandler.CONNECTING_STATUS, 1, -1, address)
@@ -146,7 +148,8 @@ namespace WallEClock
                 }
                 else
                 {
-                    ShowSnackbar(Resource.String.cannot_connect);
+                    connectView.Text = "Không thể kết nối";
+                    ShowSnackbar(Resource.String.cannot_connect, "Tìm kiếm", OnBlueTouthScan);
                 }
             }
             catch
@@ -157,6 +160,13 @@ namespace WallEClock
                 }
                 catch { }
             }
+        }
+
+        private void OnBlueTouthScan(View obj)
+        {
+            TextView connectView = FindViewById<TextView>(Resource.Id.connecting_view);
+            connectView.Visibility = ViewStates.Gone;
+            RequestToScanDevice();
         }
 
         #region BluetoothIO
